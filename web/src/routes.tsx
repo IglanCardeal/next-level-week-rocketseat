@@ -10,7 +10,7 @@ const Routes = () => {
       <Route component={Home} path="/" exact/>
       <Route component={CreatePoint} path="/create-point"/>
     </BrowserRouter>
-  )
+  );
 }
 
 export default Routes

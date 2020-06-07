@@ -2,6 +2,7 @@
   height: 100vh;
 
   background: url('../../assets/home-background.svg') no-repeat 40vw bottom;
+  background-size: 500px;
 }
 
 #page-home .content {

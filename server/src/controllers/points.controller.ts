@@ -1,39 +1,47 @@
 import { Request, Response } from 'express';
 import validator from 'validator';
+import dotenv from 'dotenv';
 
 import knex from '../database/connection';
+
+dotenv.config();
+
+const BASE_URL = process.env.BASE_URL;
 
 export default {
   index: async (request: Request, response: Response) => {
     let { city = '', uf = '', items = '' } = request.query;
 
-    city = String(city);
-    uf = String(uf);
-
-    
-    // const validadeCityAndUfStringFormat = (city: string, uf: string) => {
-    //     if (!validator.isLength(city, { max: 255}))
-    //       return response.status(401).json({message: 'Nome da cidade deve ter no minimo 2 e no maximo 255 caracteres'});
-        
-    //     if (!validator.isAlpha(city)) 
-    //       return 
-      
-    // };
+    city = String(city).toLowerCase();
+    uf = String(uf).toLowerCase();
 
     const parsedItems = String(items)
       .split(',')
       .map((item) => Number(item.trim()));
 
-    try {
-      const points = await knex('points')
-        .join('point_item', 'points.id', '=', 'point_item.point_id')
-        .whereIn('point_item.item_id', parsedItems)
-        .where('city', city)
-        .where('uf', uf)
-        .distinct()
-        .select('points.*'); // somente dados da tabela points.
+    let points;
 
-      return response.status(200).json(points);
+    try {
+      if (uf === '' && city) {
+        points = await knex('points').select('*').where('city', city);
+      } else {
+        points = await knex('points')
+          .join('point_item', 'points.id', '=', 'point_item.point_id')
+          .whereIn('point_item.item_id', parsedItems)
+          .where('city', city)
+          .where('uf', uf)
+          .distinct()
+          .select('points.*'); // somente dados da tabela points.
+      }
+
+      const serializedPoints = points.map((point) => {
+        return {
+          ...point,
+          image_url: `${BASE_URL}/uploads/${point.image}`,
+        };
+      });
+
+      return response.status(200).json(serializedPoints);
     } catch (error) {
       console.log(error);
 
@@ -56,42 +64,45 @@ export default {
     } = request.body;
 
     const point = {
-      name,
-      email,
+      name: String(name).toLowerCase(),
+      email: String(email).toLowerCase(),
       whatsapp,
-      city,
-      uf,
+      city: String(city).toLowerCase(),
+      uf: String(uf).toLowerCase(),
       latitude,
       longitude,
-      image: 'teste',
+      image: request.file.filename,
     };
 
-    // const trx = await knex.transaction();
+    const trx = await knex.transaction();
 
     try {
-      // const [point_id] = await trx('points').insert(point);
+      const [point_id] = await trx('points').insert(point);
 
-      // const pointItems = items.map((item_id: number) => {
-      //   return {
-      //     item_id,
-      //     point_id,
-      //   };
-      // });
+      const pointItems = items
+        .split(',')
+        .map((item: string) => Number(item.trim()))
+        .map((item_id: number) => {
+          return {
+            item_id,
+            point_id,
+          };
+        });
 
-      // await trx('point_item').insert(pointItems);
+      await trx('point_item').insert(pointItems);
 
-      // await trx.commit();
+      await trx.commit();
 
       return response.status(200).json({
         msg: 'Ponto de coleta criado com sucesso!',
         point: {
-          // point_id,
-          point_id: 1,
+          point_id,
           ...point,
+          image_url: `${BASE_URL}/uploads/${point.image}`,
         },
       });
     } catch (error) {
-      // await trx.rollback();
+      await trx.rollback();
 
       console.log(error);
 
@@ -118,7 +129,11 @@ export default {
           message: 'Nenhum ponto de coleta encontrado com esse id.',
         });
 
-      return response.json({ ...point, items });
+      return response.json({
+        ...point,
+        items,
+        image_url: `${BASE_URL}/uploads/${point.image}`,
+      });
     } catch (error) {
       console.log(error);
 
