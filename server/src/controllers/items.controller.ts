@@ -15,7 +15,7 @@ export default {
       return {
         id: item.id,
         title: item.title,
-        image_url: `${BASE_URL}/uploads/${item.image}`,
+        image_url: `${BASE_URL}/assets/${item.image}`,
       };
     });
 

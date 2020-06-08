@@ -1,5 +1,5 @@
-1 - Adicionar validacao e sanitarizacao dos dados. Realizar transformacao dos dados
-    para lowercase e fazer o trim().
+1 - Adicionar validacao e sanitarizacao dos dados para todas as rotas
+    que recebem dados do front. 
 
 2 - Ajustar a rota que lista os pontos de coletas com filtros.
 

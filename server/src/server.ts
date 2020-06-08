@@ -2,13 +2,15 @@ import express from 'express';
 import path from 'path';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { errors } from 'celebrate';
 
 import usersRoutes from './routes/users.routes';
 import itemsRoutes from './routes/items.routes';
 import pointsRoutes from './routes/points.routes';
 
 const app = express();
-const imagesPath = path.resolve(__dirname, '..', 'uploads');
+const imagesPath = path.resolve(__dirname, '..', 'assets');
+const uploadsPath = path.resolve(__dirname, '..', 'uploads');
 
 dotenv.config();
 
@@ -26,6 +28,9 @@ app.use(express.json());
 app.use(usersRoutes);
 app.use(itemsRoutes);
 app.use(pointsRoutes);
-app.use('/uploads', express.static(imagesPath));
+app.use('/assets', express.static(imagesPath));
+app.use('/uploads', express.static(uploadsPath));
+
+app.use(errors());
 
 app.listen(PORT, () => console.log(`Server started.\nPort: ${PORT}`));

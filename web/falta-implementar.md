@@ -11,3 +11,5 @@
     ao banco de dados e retornar a latitude e longitude da cidade, e estes valores devem ser exibidos como 
     valor padrao mapa para o usuario.
     ***OBS***: A tabela, que ainda vai ser implementada, possui um pouco mais de 5000 cidades com coordenadas.
+
+5 - Validacao no front com alguma biblioteca(yup)
